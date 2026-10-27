@@ -28,10 +28,13 @@
     @keyframes pop{to{transform:scale(1.5)!important;opacity:0}}@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
     .feedback{position:absolute;z-index:8;left:50%;top:15%;transform:translate(-50%,0);min-width:170px;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:rgba(255,255,255,.96);box-shadow:0 7px 20px rgba(31,70,91,.12);font-weight:900;text-align:center;pointer-events:none}.feedback.good{color:var(--deep)}.feedback.bad{color:var(--red)}
     .progress{position:absolute;z-index:7;left:14px;right:14px;bottom:12px;height:8px;border-radius:8px;background:rgba(24,50,74,.12);overflow:hidden}.progress span{display:block;height:100%;background:var(--deep);transition:width .15s linear}
+    .obstacle-note{position:absolute;z-index:7;left:12px;bottom:28px;padding:5px 8px;border:1px solid rgba(201,95,85,.2);border-radius:4px;color:#9e493f;background:rgba(255,255,255,.92);font-size:10px;font-weight:900}.obstacle-note strong{font-size:14px}
+    .confetti{position:absolute;z-index:30;inset:0;overflow:hidden;pointer-events:none}.confetti-piece{position:absolute;top:-18px;width:9px;height:16px;border-radius:2px;animation:confetti-fall 2.4s ease-in forwards}@keyframes confetti-fall{to{transform:translate(var(--drift),calc(100svh + 40px)) rotate(var(--turn));opacity:.8}}
     .panel-screen{min-height:inherit;padding:26px 20px;display:flex;flex-direction:column;text-align:center}.panel-screen h1{font-size:43px}.panel-screen h1 span{color:var(--deep)}.score-ring{width:140px;height:140px;margin:18px auto;border:10px solid #dff3ef;border-top-color:var(--yellow);border-radius:50%;display:grid;place-items:center}.score-ring strong{display:block;font-size:39px}.score-ring span{display:block;font-size:11px;color:var(--muted)}
     .facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 16px}.fact{padding:10px 5px;border:1px solid var(--line);border-radius:6px}.fact strong{display:block;font-size:20px}.fact span{font-size:9px;text-transform:uppercase;color:var(--muted)}
     .water-fact{padding:13px;margin:12px 0 18px;border-left:4px solid var(--yellow);background:#fff8d9;text-align:left;font-size:13px}.water-fact strong{display:block;color:var(--deep);font-size:11px;text-transform:uppercase}.actions{display:grid;gap:9px;margin-top:auto}.secondary{min-height:46px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);font-weight:800;cursor:pointer}.wallet-card{border:1px solid var(--line);border-radius:8px;padding:18px;margin:18px 0}.wallet-card strong{display:block;font-size:48px;color:var(--deep)}.wallet-list{text-align:left;margin:10px 0 18px}.wallet-list div{padding:10px 0;border-bottom:1px solid var(--line)}
     @media(max-width:480px),(max-height:720px){.app{padding:0}.screen{width:100%;min-height:100svh;border:0;border-radius:0}.welcome{height:calc(100svh - 64px);overflow:auto;padding:16px 18px 12px}.hero-mark{width:62px;height:62px;margin:0 auto 6px;font-size:30px}.hero-mark:after{width:18px;height:23px}.welcome h1{font-size:45px;margin:8px 0 4px}.tagline{margin-bottom:12px}.how{padding:8px 12px;margin-bottom:8px}.row{padding:5px 0}.settings{margin:6px 0 8px}.topbar{height:58px}.hud{height:66px}.game{inset:124px 0 0}.item{width:56px;height:56px}.panel-screen{min-height:100svh;overflow:auto}}
+    @media(prefers-reduced-motion:reduce){.confetti-piece{animation:none!important}}
     @media(orientation:landscape) and (max-height:500px){.app{padding:0}.screen{max-width:none;width:100%;min-height:100svh;border:0;border-radius:0}.topbar{height:52px}.welcome{height:calc(100svh - 52px);display:grid;grid-template-columns:.8fr 1fr;grid-template-rows:auto auto 1fr auto;gap:8px 18px;text-align:left;padding:12px 24px}.hero-mark{grid-row:1/3;width:54px;height:54px;margin:0}.welcome h1{align-self:end;font-size:38px}.tagline{grid-column:1}.how{grid-column:2;grid-row:1/4}.settings{grid-column:1}.welcome .primary{grid-column:1/3}.hud{height:58px}.game{inset:110px 0 0}.panel-screen{max-width:560px;width:100%;margin:auto}}
   </style>
 </head>
@@ -40,7 +43,7 @@
   <header class="topbar">
     <button class="icon-btn" id="homeBtn" aria-label="Return home">⌂</button>
     <div class="brand">charity: water<small>Clean water mission</small></div>
-    <button class="icon-btn" id="walletTop" aria-label="Open rewards wallet">◎</button>
+    <button class="icon-btn" id="resetTop" aria-label="Reset mission" title="Reset mission" hidden>↻</button>
   </header>
 
   <section class="welcome" id="welcome">
@@ -66,6 +69,7 @@
     </div>
     <div class="game" id="game" aria-label="Ripple Run playing field">
       <div class="feedback" id="feedback" hidden></div>
+      <div class="obstacle-note"><strong>!</strong> Avoid polluted drops: −20</div>
       <div class="progress" aria-label="Mission progress"><span id="progress"></span></div>
     </div>
   </section>
@@ -95,7 +99,7 @@
   'use strict';
   const $ = s => document.querySelector(s);
   const screens={welcome:$('#welcome'),play:$('#playScreen'),result:$('#resultScreen'),wallet:$('#walletScreen')};
-  const game=$('#game'), scoreEl=$('#score'), timerEl=$('#timer'), heartsEl=$('#hearts'), feedback=$('#feedback'), progress=$('#progress');
+  const game=$('#game'), scoreEl=$('#score'), timerEl=$('#timer'), heartsEl=$('#hearts'), feedback=$('#feedback'), progress=$('#progress'), resetTop=$('#resetTop');
   const factBank=[
     '703 million people globally lack basic access to clean drinking water.',
     'A repaired hand pump can provide reliable clean water for an entire community.',
@@ -106,7 +110,7 @@
   const state={score:0,time:45,hearts:3,streak:0,bestStreak:0,total:0,correct:0,items:[],running:false,spawnClock:0,startTime:0,lastFrame:0,elapsed:0};
   let audio=null;
 
-  function show(name){Object.entries(screens).forEach(([key,el])=>el.hidden=key!==name)}
+  function show(name){Object.entries(screens).forEach(([key,el])=>el.hidden=key!==name);resetTop.hidden=name!=='play'}
   function tone(ok){if(!$('#sound').checked)return;try{audio||(audio=new(window.AudioContext||window.webkitAudioContext));const o=audio.createOscillator(),g=audio.createGain();o.frequency.value=ok?620:180;o.type='sine';g.gain.setValueAtTime(.05,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.12);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+.12)}catch(e){}}
   function buzz(){if($('#sound').checked&&navigator.vibrate)navigator.vibrate([35,30,35])}
   function save(){localStorage.setItem('rippleRunWallet',JSON.stringify(store))}
@@ -144,6 +148,12 @@
     for(let i=state.items.length-1;i>=0;i--){const item=state.items[i];if(item.caught)continue;item.y+=item.speed*dt;item.el.style.transform=`translate(${item.x}px,${item.y}px)`;if(item.y>game.clientHeight+50){item.el.remove();state.items.splice(i,1);missItem(item)}}
     updateHUD();if(state.time<=0||state.hearts<=0)finish();else requestAnimationFrame(loop);
   }
+  function celebrate(){
+    const container=document.createElement('div');container.className='confetti';container.setAttribute('aria-hidden','true');
+    const colors=['#46baf1','#f6c928','#70b9b1','#c95f55','#18324a'];
+    for(let i=0;i<48;i++){const piece=document.createElement('i');piece.className='confetti-piece';piece.style.left=`${Math.random()*100}%`;piece.style.background=colors[i%colors.length];piece.style.animationDelay=`${Math.random()*.55}s`;piece.style.setProperty('--drift',`${(Math.random()-.5)*180}px`);piece.style.setProperty('--turn',`${180+Math.random()*720}deg`);container.append(piece)}
+    document.querySelector('.screen').append(container);setTimeout(()=>container.remove(),3200);
+  }
   function finish(){
     if(!state.running)return;state.running=false;state.items=[];game.querySelectorAll('.item').forEach(el=>el.remove());
     const accuracy=state.total?Math.round(state.correct/state.total*100):0,won=state.score>=350&&accuracy>=70;
@@ -152,11 +162,11 @@
     $('#resultTitle').innerHTML=won?'Mission <span>Complete!</span>':'<span>Try Again</span>';
     $('#resultCopy').textContent=won?'You restored a little more hope for clean water.':'Take a breath. Catch the clean items and avoid polluted drops.';
     $('#resultScore').textContent=state.score;$('#accuracy').textContent=accuracy+'%';$('#stars').textContent=stars+'★';$('#dropPoints').textContent=earned;
-    const fact=won&&store.facts.length?store.facts[store.facts.length-1]:factBank[0];$('#waterFact').innerHTML='<strong>Clean-water fact</strong>'+fact;show('result');
+    const fact=won&&store.facts.length?store.facts[store.facts.length-1]:factBank[0];$('#waterFact').innerHTML='<strong>Clean-water fact</strong>'+fact;show('result');if(won)celebrate();
   }
   function openWallet(){show('wallet');$('#walletPoints').textContent=store.points;const list=$('#completedFacts');list.innerHTML=store.facts.length?store.facts.map(f=>`<div>✓ ${f}</div>`).join(''):'<div>Complete a winning mission to unlock a clean-water fact.</div>'}
 
-  $('#startBtn').addEventListener('click',reset);$('#againBtn').addEventListener('click',reset);$('#walletBtn').addEventListener('click',openWallet);$('#walletTop').addEventListener('click',openWallet);
+  $('#startBtn').addEventListener('click',reset);$('#againBtn').addEventListener('click',reset);resetTop.addEventListener('click',reset);$('#walletBtn').addEventListener('click',openWallet);
   function home(){if(state.running){state.running=false;state.items=[];game.querySelectorAll('.item').forEach(el=>el.remove())}show('welcome')}
   $('#homeBtn').addEventListener('click',home);$('#walletHomeBtn').addEventListener('click',home);
 })();
