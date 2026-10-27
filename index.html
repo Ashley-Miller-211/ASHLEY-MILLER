@@ -442,9 +442,24 @@
     }
 
     .project-card ul {
-      margin-bottom: 0;
+      margin-bottom: 18px;
       padding-left: 20px;
       color: var(--muted);
+    }
+
+    .project-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--purple);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .project-link:hover,
+    .project-link:focus {
+      text-decoration: underline;
+      text-underline-offset: 4px;
     }
 
     /* Contact */
@@ -885,6 +900,33 @@
             <li>Visual communication</li>
             <li>Research and writing</li>
           </ul>
+        </article>
+
+        <article class="project-card">
+          <div class="project-label">
+            <span class="material-icons" aria-hidden="true">
+              water_drop
+            </span>
+            Interactive
+          </div>
+
+          <h3>Catch the Flow</h3>
+
+          <p>
+            A responsive water-conservation game built with HTML,
+            CSS, canvas, and JavaScript.
+          </p>
+
+          <ul>
+            <li>Mouse, touch, and keyboard controls</li>
+            <li>Scoring, combos, and increasing difficulty</li>
+            <li>Clean and polluted drop mechanics</li>
+          </ul>
+
+          <a class="project-link" href="water-game.html">
+            Play the game
+            <span class="material-icons" aria-hidden="true">arrow_forward</span>
+          </a>
         </article>
       </div>
     </section>

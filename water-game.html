@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f3e8">
+  <title>Ripple Run | Charity: Water</title>
+  <style>
+    :root {
+      --ink:#18324a; --muted:#6d7d88; --blue:#46baf1; --deep:#238abd;
+      --yellow:#f6c928; --aqua:#dff3ef; --cream:#fffaf0; --red:#c95f55;
+      --line:#e4e4dc; --white:#fff; --shadow:0 16px 44px rgba(31,70,91,.12);
+    }
+    *{box-sizing:border-box} body{margin:0;min-width:320px;min-height:100svh;background:var(--cream);color:var(--ink);font-family:"Avenir Next","Trebuchet MS",sans-serif}
+    button{font:inherit} [hidden]{display:none!important}
+    .app{min-height:100svh;display:grid;place-items:center;padding:18px}.screen{width:min(430px,100%);min-height:min(760px,calc(100svh - 36px));position:relative;overflow:hidden;border:1px solid rgba(24,50,74,.08);border-radius:8px;background:var(--white);box-shadow:var(--shadow)}
+    .topbar{height:64px;padding:max(10px,env(safe-area-inset-top)) 16px 8px;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;background:rgba(255,255,255,.92);border-bottom:1px solid var(--line)}
+    .icon-btn{width:44px;height:44px;border:1px solid var(--line);border-radius:50%;background:#fff;color:var(--ink);display:grid;place-items:center;cursor:pointer;font-size:22px}.icon-btn:focus-visible,.primary:focus-visible,.item:focus-visible{outline:3px solid #18324a;outline-offset:3px}
+    .brand{text-align:center;font-weight:900;color:var(--deep);letter-spacing:.02em}.brand small{display:block;color:var(--muted);font-size:9px;text-transform:uppercase}
+    .welcome{display:flex;flex-direction:column;height:calc(100% - 64px);padding:24px 20px 18px;text-align:center}.hero-mark{width:78px;height:78px;margin:4px auto 12px;position:relative;border:8px solid #fff;border-radius:50%;background:var(--yellow);box-shadow:0 7px 22px rgba(200,156,16,.22);display:grid;place-items:center;font-size:38px}.hero-mark:after{content:"";position:absolute;right:-12px;bottom:-7px;width:22px;height:27px;border:3px solid #fff;border-radius:60% 60% 70% 30%;background:var(--blue);transform:rotate(45deg)}
+    h1{font-family:Georgia,serif;font-size:clamp(43px,12vw,64px);line-height:.9;margin:12px 0 8px;letter-spacing:-1px}.h1-blue{color:#3ba8d8}.tagline{color:var(--muted);margin:0 0 20px}.tagline strong{color:var(--deep)}
+    .how{border:1px solid var(--line);border-radius:8px;text-align:left;padding:12px 14px;margin:0 0 12px}.how h2{font-size:12px;text-transform:uppercase;letter-spacing:.12em;margin:0 0 8px}.row{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:10px;padding:7px 0;border-top:1px solid #f1f1ed;font-size:13px}.row:first-of-type{border:0}.symbol{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--aqua);font-size:20px}.symbol.yellow{background:#fff5c9}.symbol.red{background:#f9dfda}.points{color:var(--deep);font-weight:800;font-size:12px}.points.bad{color:var(--red)}
+    .settings{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin:8px 0 14px;color:var(--muted);font-size:12px;text-align:left}.settings input{accent-color:var(--blue)}
+    .primary{width:100%;min-height:52px;border:0;border-radius:6px;background:var(--yellow);color:var(--ink);font-weight:900;cursor:pointer}.primary:active{transform:translateY(1px)}
+    .hud{height:74px;padding:9px 12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;border-bottom:1px solid var(--line)}.stat{min-width:0;text-align:center}.stat-label{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.08em}.stat-value{display:block;font-size:20px;font-weight:900}.hearts{color:var(--red);font-size:18px;letter-spacing:1px}.time{color:var(--deep)}
+    .game{position:absolute;inset:138px 0 0;overflow:hidden;background:linear-gradient(180deg,#fafdff 0,#edf8f7 68%,#dbeee9 68%,#dbeee9 100%)}.game:before{content:"";position:absolute;inset:68% 0 0;background:repeating-linear-gradient(90deg,transparent 0 44px,rgba(41,142,163,.04) 44px 45px)}
+    .item{position:absolute;width:58px;height:58px;border:3px solid #fff;border-radius:50%;background:var(--blue);box-shadow:0 7px 16px rgba(31,119,151,.18);color:white;display:grid;place-items:center;font-size:30px;cursor:pointer;touch-action:manipulation;will-change:transform}.item.clean:after{content:"";width:14px;height:8px;border-bottom:3px solid rgba(255,255,255,.7);border-radius:50%;transform:translateY(-3px)}.item.can{background:var(--yellow);color:#6d5931}.item.repair{background:#70b9b1}.item.polluted{background:var(--red);border-radius:48% 48% 55% 55%}.item.polluted:after{content:"!";font-weight:900;font-size:29px}.item.bad-hit{outline:4px solid var(--ink);animation:shake .25s linear}.item.collected{pointer-events:none;animation:pop .22s ease-out forwards}
+    @keyframes pop{to{transform:scale(1.5)!important;opacity:0}}@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+    .feedback{position:absolute;z-index:8;left:50%;top:15%;transform:translate(-50%,0);min-width:170px;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:rgba(255,255,255,.96);box-shadow:0 7px 20px rgba(31,70,91,.12);font-weight:900;text-align:center;pointer-events:none}.feedback.good{color:var(--deep)}.feedback.bad{color:var(--red)}
+    .progress{position:absolute;z-index:7;left:14px;right:14px;bottom:12px;height:8px;border-radius:8px;background:rgba(24,50,74,.12);overflow:hidden}.progress span{display:block;height:100%;background:var(--deep);transition:width .15s linear}
+    .panel-screen{min-height:inherit;padding:26px 20px;display:flex;flex-direction:column;text-align:center}.panel-screen h1{font-size:43px}.panel-screen h1 span{color:var(--deep)}.score-ring{width:140px;height:140px;margin:18px auto;border:10px solid #dff3ef;border-top-color:var(--yellow);border-radius:50%;display:grid;place-items:center}.score-ring strong{display:block;font-size:39px}.score-ring span{display:block;font-size:11px;color:var(--muted)}
+    .facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 16px}.fact{padding:10px 5px;border:1px solid var(--line);border-radius:6px}.fact strong{display:block;font-size:20px}.fact span{font-size:9px;text-transform:uppercase;color:var(--muted)}
+    .water-fact{padding:13px;margin:12px 0 18px;border-left:4px solid var(--yellow);background:#fff8d9;text-align:left;font-size:13px}.water-fact strong{display:block;color:var(--deep);font-size:11px;text-transform:uppercase}.actions{display:grid;gap:9px;margin-top:auto}.secondary{min-height:46px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);font-weight:800;cursor:pointer}.wallet-card{border:1px solid var(--line);border-radius:8px;padding:18px;margin:18px 0}.wallet-card strong{display:block;font-size:48px;color:var(--deep)}.wallet-list{text-align:left;margin:10px 0 18px}.wallet-list div{padding:10px 0;border-bottom:1px solid var(--line)}
+    @media(max-width:480px),(max-height:720px){.app{padding:0}.screen{width:100%;min-height:100svh;border:0;border-radius:0}.welcome{height:calc(100svh - 64px);overflow:auto;padding:16px 18px 12px}.hero-mark{width:62px;height:62px;margin:0 auto 6px;font-size:30px}.hero-mark:after{width:18px;height:23px}.welcome h1{font-size:45px;margin:8px 0 4px}.tagline{margin-bottom:12px}.how{padding:8px 12px;margin-bottom:8px}.row{padding:5px 0}.settings{margin:6px 0 8px}.topbar{height:58px}.hud{height:66px}.game{inset:124px 0 0}.item{width:56px;height:56px}.panel-screen{min-height:100svh;overflow:auto}}
+    @media(orientation:landscape) and (max-height:500px){.app{padding:0}.screen{max-width:none;width:100%;min-height:100svh;border:0;border-radius:0}.topbar{height:52px}.welcome{height:calc(100svh - 52px);display:grid;grid-template-columns:.8fr 1fr;grid-template-rows:auto auto 1fr auto;gap:8px 18px;text-align:left;padding:12px 24px}.hero-mark{grid-row:1/3;width:54px;height:54px;margin:0}.welcome h1{align-self:end;font-size:38px}.tagline{grid-column:1}.how{grid-column:2;grid-row:1/4}.settings{grid-column:1}.welcome .primary{grid-column:1/3}.hud{height:58px}.game{inset:110px 0 0}.panel-screen{max-width:560px;width:100%;margin:auto}}
+  </style>
+</head>
+<body>
+<div class="app"><main class="screen">
+  <header class="topbar">
+    <button class="icon-btn" id="homeBtn" aria-label="Return home">⌂</button>
+    <div class="brand">charity: water<small>Clean water mission</small></div>
+    <button class="icon-btn" id="walletTop" aria-label="Open rewards wallet">◎</button>
+  </header>
+
+  <section class="welcome" id="welcome">
+    <div class="hero-mark" aria-hidden="true">💧</div>
+    <h1><span>Ripple</span><br><span class="h1-blue">Run</span></h1>
+    <p class="tagline"><strong>CAMPUS WATER QUEST</strong><br>Collect clean water. Protect the mission.</p>
+    <div class="how">
+      <h2>How to play</h2>
+      <div class="row"><span class="symbol">💧</span><span>Clean drop</span><span class="points">+10</span></div>
+      <div class="row"><span class="symbol yellow">🧴</span><span>Jerry can</span><span class="points">+25</span></div>
+      <div class="row"><span class="symbol">🔧</span><span>Repair icon</span><span class="points">+15</span></div>
+      <div class="row"><span class="symbol red">💩</span><span>Polluted drop</span><span class="points bad">−20</span></div>
+    </div>
+    <div class="settings"><label for="sound">Sound effects & haptics</label><input id="sound" type="checkbox" checked></div>
+    <button class="primary" id="startBtn">Start Mission</button>
+  </section>
+
+  <section id="playScreen" hidden>
+    <div class="hud" aria-live="polite">
+      <div class="stat"><span class="stat-label">Score</span><span class="stat-value" id="score">0</span></div>
+      <div class="stat"><span class="stat-label">Time</span><span class="stat-value time" id="timer">45</span></div>
+      <div class="stat"><span class="stat-label">Hearts</span><span class="stat-value hearts" id="hearts">♥ ♥ ♥</span></div>
+    </div>
+    <div class="game" id="game" aria-label="Ripple Run playing field">
+      <div class="feedback" id="feedback" hidden></div>
+      <div class="progress" aria-label="Mission progress"><span id="progress"></span></div>
+    </div>
+  </section>
+
+  <section class="panel-screen" id="resultScreen" hidden>
+    <h1 id="resultTitle">Mission <span>Complete</span></h1>
+    <p id="resultCopy"></p>
+    <div class="score-ring"><div><strong id="resultScore">0</strong><span>points</span></div></div>
+    <div class="facts">
+      <div class="fact"><strong id="accuracy">0%</strong><span>Accuracy</span></div>
+      <div class="fact"><strong id="stars">0★</strong><span>Stars</span></div>
+      <div class="fact"><strong id="dropPoints">0</strong><span>Drop pts</span></div>
+    </div>
+    <div class="water-fact" id="waterFact"></div>
+    <div class="actions"><button class="primary" id="againBtn">Play Again</button><button class="secondary" id="walletBtn">Rewards Wallet</button></div>
+  </section>
+
+  <section class="panel-screen" id="walletScreen" hidden>
+    <h1>Rewards <span>Wallet</span></h1>
+    <div class="wallet-card"><strong id="walletPoints">0</strong><span>Drop Points earned</span></div>
+    <div class="wallet-list" id="completedFacts"></div>
+    <div class="actions"><button class="primary" id="walletHomeBtn">Back to Home</button></div>
+  </section>
+</main></div>
+<script>
+(() => {
+  'use strict';
+  const $ = s => document.querySelector(s);
+  const screens={welcome:$('#welcome'),play:$('#playScreen'),result:$('#resultScreen'),wallet:$('#walletScreen')};
+  const game=$('#game'), scoreEl=$('#score'), timerEl=$('#timer'), heartsEl=$('#hearts'), feedback=$('#feedback'), progress=$('#progress');
+  const factBank=[
+    '703 million people globally lack basic access to clean drinking water.',
+    'A repaired hand pump can provide reliable clean water for an entire community.',
+    'Every minute, a team of charity: water-supported workers helps a community find clean water.'
+  ];
+  const store={points:0, stars:0, facts:[]};
+  try{Object.assign(store,JSON.parse(localStorage.getItem('rippleRunWallet')||'{}'))}catch(e){}
+  const state={score:0,time:45,hearts:3,streak:0,bestStreak:0,total:0,correct:0,items:[],running:false,spawnClock:0,startTime:0,lastFrame:0,elapsed:0};
+  let audio=null;
+
+  function show(name){Object.entries(screens).forEach(([key,el])=>el.hidden=key!==name)}
+  function tone(ok){if(!$('#sound').checked)return;try{audio||(audio=new(window.AudioContext||window.webkitAudioContext));const o=audio.createOscillator(),g=audio.createGain();o.frequency.value=ok?620:180;o.type='sine';g.gain.setValueAtTime(.05,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.12);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+.12)}catch(e){}}
+  function buzz(){if($('#sound').checked&&navigator.vibrate)navigator.vibrate([35,30,35])}
+  function save(){localStorage.setItem('rippleRunWallet',JSON.stringify(store))}
+  function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
+
+  function reset(){
+    state.score=0;state.time=45;state.hearts=3;state.streak=0;state.bestStreak=0;state.total=0;state.correct=0;state.items=[];state.spawnClock=.2;state.elapsed=0;
+    game.querySelectorAll('.item').forEach(el=>el.remove());updateHUD();show('play');state.running=true;state.lastFrame=performance.now();requestAnimationFrame(loop);
+  }
+  function updateHUD(){scoreEl.textContent=state.score;timerEl.textContent=Math.ceil(state.time);heartsEl.textContent=Array.from({length:3},(_,i)=>i<state.hearts?'♥':'♡').join(' ');progress.style.width=`${clamp(state.elapsed/45*100,0,100)}%`}
+  function spawn(){
+    const roll=Math.random(), type=roll<.58?'clean':roll<.78?'repair':roll<.93?'can':'polluted';
+    const el=document.createElement('button');el.type='button';el.className=`item ${type}`;
+    el.setAttribute('aria-label',type==='polluted'?'Polluted drop, avoid':'Collect '+({clean:'clean drop',repair:'repair icon',can:'jerry can'}[type]));
+    el.textContent=type==='clean'?'':type==='repair'?'🔧':type==='can'?'🧴':'!';
+    const size=56, speed=clamp(88+state.elapsed*3.2+(Math.random()*32),88,235);
+    const item={el,x:Math.random()*Math.max(1,game.clientWidth-size-12)+6,y:-64,speed,type,caught:false};
+    el.style.transform=`translate(${item.x}px,${item.y}px)`;el.addEventListener('pointerdown',e=>{e.prevent;catchItem(item)});game.append(el);state.items.push(item);
+  }
+  function catchItem(item){
+    if(!state.running||item.caught)return;item.caught=true;state.total++;
+    if(item.type==='polluted'){state.score-=20;state.streak=0;state.hearts=Math.max(0,state.hearts-0);feedbackMsg('Polluted: −20 points','bad',item.el);item.el.classList.add('bad-hit');tone(false);buzz();}else{
+      const points={clean:10,repair:15,can:25}[item.type];state.correct++;state.streak++;state.score+=points;
+      let bonus='';if(state.streak>0&&state.streak%5===0){state.score+=50;bonus=' · streak +50'}
+      state.bestStreak=Math.max(state.bestStreak,state.streak);feedbackMsg(`+${points}${bonus}`,'good',item.el);tone(true);item.el.classList.add('collected');
+    }
+    updateHUD();setTimeout(()=>item.el.remove(),250);checkEnd();
+  }
+  function missItem(item){state.total++;if(item.type!=='polluted'){state.hearts--;state.streak=0;feedbackMsg('Missed clean item · −1 heart','bad',null)}updateHUD();checkEnd()}
+  function feedbackMsg(text,type,anchor){feedback.textContent=text;feedback.className=`feedback ${type}`;feedback.hidden=false;if(anchor)feedback.style.top=`${clamp(anchor.offsetTop-10,10,game.clientHeight*.42)}px`;clearTimeout(feedback.timer);feedback.timer=setTimeout(()=>feedback.hidden=true,850)}
+  function checkEnd(){if(state.hearts<=0||state.time<=0)finish()}
+  function loop(now){
+    if(!state.running)return;const dt=Math.min((now-state.lastFrame)/1000,.05);state.lastFrame=now;state.elapsed+=dt;state.time=Math.max(0,45-state.elapsed);state.spawnClock-=dt;
+    if(state.spawnClock<=0){spawn();state.spawnClock=.8+Math.random()*.4}
+    for(let i=state.items.length-1;i>=0;i--){const item=state.items[i];if(item.caught)continue;item.y+=item.speed*dt;item.el.style.transform=`translate(${item.x}px,${item.y}px)`;if(item.y>game.clientHeight+50){item.el.remove();state.items.splice(i,1);missItem(item)}}
+    updateHUD();if(state.time<=0||state.hearts<=0)finish();else requestAnimationFrame(loop);
+  }
+  function finish(){
+    if(!state.running)return;state.running=false;state.items=[];game.querySelectorAll('.item').forEach(el=>el.remove());
+    const accuracy=state.total?Math.round(state.correct/state.total*100):0,won=state.score>=350&&accuracy>=70;
+    const stars=won?(state.score>=600?3:state.score>=450?2:1):0,earned=won?stars*25+(state.score>=500?25:0):0;
+    store.points+=earned;store.stars+=stars;if(won){const fact=factBank[Math.floor(Math.random()*factBank.length)];if(!store.facts.includes(fact))store.facts.push(fact)}save();
+    $('#resultTitle').innerHTML=won?'Mission <span>Complete!</span>':'<span>Try Again</span>';
+    $('#resultCopy').textContent=won?'You restored a little more hope for clean water.':'Take a breath. Catch the clean items and avoid polluted drops.';
+    $('#resultScore').textContent=state.score;$('#accuracy').textContent=accuracy+'%';$('#stars').textContent=stars+'★';$('#dropPoints').textContent=earned;
+    const fact=won&&store.facts.length?store.facts[store.facts.length-1]:factBank[0];$('#waterFact').innerHTML='<strong>Clean-water fact</strong>'+fact;show('result');
+  }
+  function openWallet(){show('wallet');$('#walletPoints').textContent=store.points;const list=$('#completedFacts');list.innerHTML=store.facts.length?store.facts.map(f=>`<div>✓ ${f}</div>`).join(''):'<div>Complete a winning mission to unlock a clean-water fact.</div>'}
+
+  $('#startBtn').addEventListener('click',reset);$('#againBtn').addEventListener('click',reset);$('#walletBtn').addEventListener('click',openWallet);$('#walletTop').addEventListener('click',openWallet);
+  function home(){if(state.running){state.running=false;state.items=[];game.querySelectorAll('.item').forEach(el=>el.remove())}show('welcome')}
+  $('#homeBtn').addEventListener('click',home);$('#walletHomeBtn').addEventListener('click',home);
+})();
+</script>
+</body>
+</html>
