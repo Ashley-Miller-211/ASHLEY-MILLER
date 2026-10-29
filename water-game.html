@@ -5,22 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f8f3e8">
   <title>Ripple Run | Charity: Water</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --ink:#18324a; --muted:#6d7d88; --blue:#46baf1; --deep:#238abd;
       --yellow:#f6c928; --aqua:#dff3ef; --cream:#fffaf0; --red:#c95f55;
       --line:#e4e4dc; --white:#fff; --shadow:0 16px 44px rgba(31,70,91,.12);
     }
-    *{box-sizing:border-box} body{margin:0;min-width:320px;min-height:100svh;background:var(--cream);color:var(--ink);font-family:"Avenir Next","Trebuchet MS",sans-serif}
+    *{box-sizing:border-box} body{margin:0;min-width:320px;min-height:100svh;background:var(--cream);color:var(--ink);font-family:"Montserrat","Avenir Next","Trebuchet MS",sans-serif}
     button{font:inherit} [hidden]{display:none!important}
     .app{min-height:100svh;display:grid;place-items:center;padding:18px}.screen{width:min(430px,100%);min-height:min(760px,calc(100svh - 36px));position:relative;overflow:hidden;border:1px solid rgba(24,50,74,.08);border-radius:8px;background:var(--white);box-shadow:var(--shadow)}
     .topbar{height:64px;padding:max(10px,env(safe-area-inset-top)) 16px 8px;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;background:rgba(255,255,255,.92);border-bottom:1px solid var(--line)}
     .icon-btn{width:44px;height:44px;border:1px solid var(--line);border-radius:50%;background:#fff;color:var(--ink);display:grid;place-items:center;cursor:pointer;font-size:22px}.icon-btn:focus-visible,.primary:focus-visible,.item:focus-visible{outline:3px solid #18324a;outline-offset:3px}
     .brand{text-align:center;font-weight:900;color:var(--deep);letter-spacing:.02em}.brand small{display:block;color:var(--muted);font-size:9px;text-transform:uppercase}
-    .welcome{display:flex;flex-direction:column;height:calc(100% - 64px);padding:24px 20px 18px;text-align:center}.hero-mark{width:78px;height:78px;margin:4px auto 12px;position:relative;border:8px solid #fff;border-radius:50%;background:var(--yellow);box-shadow:0 7px 22px rgba(200,156,16,.22);display:grid;place-items:center;font-size:38px}.hero-mark:after{content:"";position:absolute;right:-12px;bottom:-7px;width:22px;height:27px;border:3px solid #fff;border-radius:60% 60% 70% 30%;background:var(--blue);transform:rotate(45deg)}
-    h1{font-family:Georgia,serif;font-size:clamp(43px,12vw,64px);line-height:.9;margin:12px 0 8px;letter-spacing:-1px}.h1-blue{color:#3ba8d8}.tagline{color:var(--muted);margin:0 0 20px}.tagline strong{color:var(--deep)}
+    .welcome{display:flex;flex-direction:column;height:calc(100% - 64px);min-height:0;overflow-y:auto;padding:24px 20px 18px;text-align:center}.hero-mark{width:78px;height:78px;margin:4px auto 12px;position:relative;border:8px solid #fff;border-radius:50%;background:var(--yellow);box-shadow:0 7px 22px rgba(200,156,16,.22);display:grid;place-items:center;font-size:38px}.hero-mark:after{content:"";position:absolute;right:-12px;bottom:-7px;width:22px;height:27px;border:3px solid #fff;border-radius:60% 60% 70% 30%;background:var(--blue);transform:rotate(45deg)}
+    h1{font-family:"Montserrat","Avenir Next",sans-serif;font-size:clamp(43px,12vw,64px);font-weight:900;line-height:.9;margin:12px 0 8px;letter-spacing:0}.h1-blue{color:#3ba8d8}.tagline{color:var(--muted);margin:0 0 20px}.tagline strong{color:var(--deep)}
     .how{border:1px solid var(--line);border-radius:8px;text-align:left;padding:12px 14px;margin:0 0 12px}.how h2{font-size:12px;text-transform:uppercase;letter-spacing:.12em;margin:0 0 8px}.row{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:10px;padding:7px 0;border-top:1px solid #f1f1ed;font-size:13px}.row:first-of-type{border:0}.symbol{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--aqua);font-size:20px}.symbol.yellow{background:#fff5c9}.symbol.red{background:#f9dfda}.points{color:var(--deep);font-weight:800;font-size:12px}.points.bad{color:var(--red)}
     .settings{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin:8px 0 14px;color:var(--muted);font-size:12px;text-align:left}.settings input{accent-color:var(--blue)}
+    .difficulty{border:0;padding:0;margin:0 0 12px;text-align:left}.difficulty legend{padding:0 0 7px;font-size:12px;font-weight:800;text-transform:uppercase}.difficulty-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.difficulty label{position:relative;cursor:pointer}.difficulty input{position:absolute;width:1px;height:1px;opacity:0}.difficulty label span{height:52px;padding:6px 4px;border:1px solid var(--line);border-radius:6px;display:flex;flex-direction:column;justify-content:center;text-align:center;background:#fff}.difficulty label input:checked+span{border-color:var(--deep);box-shadow:inset 0 0 0 1px var(--deep);background:#eff9fc}.difficulty label input:focus-visible+span{outline:3px solid var(--ink);outline-offset:2px}.difficulty label strong{font-size:11px}.difficulty label small{margin-top:2px;color:var(--muted);font-size:8px;white-space:nowrap}
+    .site-links{display:flex;justify-content:center;gap:16px;margin-top:auto;padding-top:12px;font-size:11px}.site-links a{color:var(--deep);font-weight:800;text-decoration-thickness:1px;text-underline-offset:3px}
     .primary{width:100%;min-height:52px;border:0;border-radius:6px;background:var(--yellow);color:var(--ink);font-weight:900;cursor:pointer}.primary:active{transform:translateY(1px)}
     .hud{height:74px;padding:9px 12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;border-bottom:1px solid var(--line)}.stat{min-width:0;text-align:center}.stat-label{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.08em}.stat-value{display:block;font-size:20px;font-weight:900}.hearts{color:var(--red);font-size:18px;letter-spacing:1px}.time{color:var(--deep)}
     .game{position:absolute;inset:138px 0 0;overflow:hidden;background:linear-gradient(180deg,#fafdff 0,#edf8f7 68%,#dbeee9 68%,#dbeee9 100%)}.game:before{content:"";position:absolute;inset:68% 0 0;background:repeating-linear-gradient(90deg,transparent 0 44px,rgba(41,142,163,.04) 44px 45px)}
@@ -57,8 +62,17 @@
       <div class="row"><span class="symbol">🔧</span><span>Repair icon</span><span class="points">+15</span></div>
       <div class="row"><span class="symbol red">💩</span><span>Polluted drop</span><span class="points bad">−20</span></div>
     </div>
+    <fieldset class="difficulty">
+      <legend>Choose difficulty</legend>
+      <div class="difficulty-options">
+        <label><input type="radio" name="difficulty" value="easy"><span><strong>Easy</strong><small>250 pts · 60 sec</small></span></label>
+        <label><input type="radio" name="difficulty" value="normal" checked><span><strong>Normal</strong><small>350 pts · 45 sec</small></span></label>
+        <label><input type="radio" name="difficulty" value="hard"><span><strong>Hard</strong><small>450 pts · 35 sec</small></span></label>
+      </div>
+    </fieldset>
     <div class="settings"><label for="sound">Sound effects & haptics</label><input id="sound" type="checkbox" checked></div>
     <button class="primary" id="startBtn">Start Mission</button>
+    <footer class="site-links"><a href="https://www.charitywater.org/" target="_blank" rel="noopener">charity: water</a><a href="https://www.charitywater.org/donate" target="_blank" rel="noopener">Donate</a></footer>
   </section>
 
   <section id="playScreen" hidden>
@@ -69,7 +83,7 @@
     </div>
     <div class="game" id="game" aria-label="Ripple Run playing field">
       <div class="feedback" id="feedback" hidden></div>
-      <div class="obstacle-note"><strong>!</strong> Avoid polluted drops: −20</div>
+      <div class="obstacle-note"><strong>Goal: <span id="goalLabel">350</span> pts</strong> · Avoid polluted drops: −20</div>
       <div class="progress" aria-label="Mission progress"><span id="progress"></span></div>
     </div>
   </section>
@@ -107,7 +121,12 @@
   ];
   const store={points:0, stars:0, facts:[]};
   try{Object.assign(store,JSON.parse(localStorage.getItem('rippleRunWallet')||'{}'))}catch(e){}
-  const state={score:0,time:45,hearts:3,streak:0,bestStreak:0,total:0,correct:0,items:[],running:false,spawnClock:0,startTime:0,lastFrame:0,elapsed:0};
+  const difficultyRules={
+    easy:{duration:60,goal:250,accuracy:60,spawnMin:1.05,spawnMax:1.35,baseSpeed:72,speedGrowth:2.4,maxSpeed:190},
+    normal:{duration:45,goal:350,accuracy:70,spawnMin:.8,spawnMax:1.2,baseSpeed:88,speedGrowth:3.2,maxSpeed:235},
+    hard:{duration:35,goal:450,accuracy:75,spawnMin:.55,spawnMax:.85,baseSpeed:105,speedGrowth:4.4,maxSpeed:285}
+  };
+  const state={score:0,time:45,duration:45,difficulty:'normal',hearts:3,streak:0,bestStreak:0,total:0,correct:0,items:[],running:false,spawnClock:0,startTime:0,lastFrame:0,elapsed:0};
   let audio=null;
 
   function show(name){Object.entries(screens).forEach(([key,el])=>el.hidden=key!==name);resetTop.hidden=name!=='play'}
@@ -117,18 +136,19 @@
   function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
 
   function reset(){
-    state.score=0;state.time=45;state.hearts=3;state.streak=0;state.bestStreak=0;state.total=0;state.correct=0;state.items=[];state.spawnClock=.2;state.elapsed=0;
+    state.difficulty=document.querySelector('input[name="difficulty"]:checked').value;const rules=difficultyRules[state.difficulty];
+    state.score=0;state.duration=rules.duration;state.time=rules.duration;state.hearts=3;state.streak=0;state.bestStreak=0;state.total=0;state.correct=0;state.items=[];state.spawnClock=.2;state.elapsed=0;$('#goalLabel').textContent=rules.goal;
     game.querySelectorAll('.item').forEach(el=>el.remove());updateHUD();show('play');state.running=true;state.lastFrame=performance.now();requestAnimationFrame(loop);
   }
-  function updateHUD(){scoreEl.textContent=state.score;timerEl.textContent=Math.ceil(state.time);heartsEl.textContent=Array.from({length:3},(_,i)=>i<state.hearts?'♥':'♡').join(' ');progress.style.width=`${clamp(state.elapsed/45*100,0,100)}%`}
+  function updateHUD(){scoreEl.textContent=state.score;timerEl.textContent=Math.ceil(state.time);heartsEl.textContent=Array.from({length:3},(_,i)=>i<state.hearts?'♥':'♡').join(' ');progress.style.width=`${clamp(state.elapsed/state.duration*100,0,100)}%`}
   function spawn(){
     const roll=Math.random(), type=roll<.58?'clean':roll<.78?'repair':roll<.93?'can':'polluted';
     const el=document.createElement('button');el.type='button';el.className=`item ${type}`;
     el.setAttribute('aria-label',type==='polluted'?'Polluted drop, avoid':'Collect '+({clean:'clean drop',repair:'repair icon',can:'jerry can'}[type]));
     el.textContent=type==='clean'?'':type==='repair'?'🔧':type==='can'?'🧴':'!';
-    const size=56, speed=clamp(88+state.elapsed*3.2+(Math.random()*32),88,235);
+    const rules=difficultyRules[state.difficulty],size=56,speed=clamp(rules.baseSpeed+state.elapsed*rules.speedGrowth+(Math.random()*32),rules.baseSpeed,rules.maxSpeed);
     const item={el,x:Math.random()*Math.max(1,game.clientWidth-size-12)+6,y:-64,speed,type,caught:false};
-    el.style.transform=`translate(${item.x}px,${item.y}px)`;el.addEventListener('pointerdown',e=>{e.prevent;catchItem(item)});game.append(el);state.items.push(item);
+    el.style.transform=`translate(${item.x}px,${item.y}px)`;el.addEventListener('click',()=>catchItem(item));game.append(el);state.items.push(item);
   }
   function catchItem(item){
     if(!state.running||item.caught)return;item.caught=true;state.total++;
@@ -137,14 +157,14 @@
       let bonus='';if(state.streak>0&&state.streak%5===0){state.score+=50;bonus=' · streak +50'}
       state.bestStreak=Math.max(state.bestStreak,state.streak);feedbackMsg(`+${points}${bonus}`,'good',item.el);tone(true);item.el.classList.add('collected');
     }
-    updateHUD();setTimeout(()=>item.el.remove(),250);checkEnd();
+    updateHUD();setTimeout(()=>{item.el.remove();const index=state.items.indexOf(item);if(index>=0)state.items.splice(index,1)},250);checkEnd();
   }
   function missItem(item){state.total++;if(item.type!=='polluted'){state.hearts--;state.streak=0;feedbackMsg('Missed clean item · −1 heart','bad',null)}updateHUD();checkEnd()}
   function feedbackMsg(text,type,anchor){feedback.textContent=text;feedback.className=`feedback ${type}`;feedback.hidden=false;if(anchor)feedback.style.top=`${clamp(anchor.offsetTop-10,10,game.clientHeight*.42)}px`;clearTimeout(feedback.timer);feedback.timer=setTimeout(()=>feedback.hidden=true,850)}
   function checkEnd(){if(state.hearts<=0||state.time<=0)finish()}
   function loop(now){
-    if(!state.running)return;const dt=Math.min((now-state.lastFrame)/1000,.05);state.lastFrame=now;state.elapsed+=dt;state.time=Math.max(0,45-state.elapsed);state.spawnClock-=dt;
-    if(state.spawnClock<=0){spawn();state.spawnClock=.8+Math.random()*.4}
+    if(!state.running)return;const dt=Math.min((now-state.lastFrame)/1000,.05);state.lastFrame=now;state.elapsed+=dt;state.time=Math.max(0,state.duration-state.elapsed);state.spawnClock-=dt;
+    if(state.spawnClock<=0){spawn();const rules=difficultyRules[state.difficulty];state.spawnClock=rules.spawnMin+Math.random()*(rules.spawnMax-rules.spawnMin)}
     for(let i=state.items.length-1;i>=0;i--){const item=state.items[i];if(item.caught)continue;item.y+=item.speed*dt;item.el.style.transform=`translate(${item.x}px,${item.y}px)`;if(item.y>game.clientHeight+50){item.el.remove();state.items.splice(i,1);missItem(item)}}
     updateHUD();if(state.time<=0||state.hearts<=0)finish();else requestAnimationFrame(loop);
   }
@@ -156,8 +176,8 @@
   }
   function finish(){
     if(!state.running)return;state.running=false;state.items=[];game.querySelectorAll('.item').forEach(el=>el.remove());
-    const accuracy=state.total?Math.round(state.correct/state.total*100):0,won=state.score>=350&&accuracy>=70;
-    const stars=won?(state.score>=600?3:state.score>=450?2:1):0,earned=won?stars*25+(state.score>=500?25:0):0;
+    const rules=difficultyRules[state.difficulty],accuracy=state.total?Math.round(state.correct/state.total*100):0,won=state.score>=rules.goal&&accuracy>=rules.accuracy;
+    const stars=won?(state.score>=Math.ceil(rules.goal*1.6)?3:state.score>=Math.ceil(rules.goal*1.28)?2:1):0,earned=won?stars*25+(state.score>=Math.ceil(rules.goal*1.43)?25:0):0;
     store.points+=earned;store.stars+=stars;if(won){const fact=factBank[Math.floor(Math.random()*factBank.length)];if(!store.facts.includes(fact))store.facts.push(fact)}save();
     $('#resultTitle').innerHTML=won?'Mission <span>Complete!</span>':'<span>Try Again</span>';
     $('#resultCopy').textContent=won?'You restored a little more hope for clean water.':'Take a breath. Catch the clean items and avoid polluted drops.';
