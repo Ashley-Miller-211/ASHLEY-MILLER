@@ -126,18 +126,55 @@
     normal:{duration:45,goal:350,accuracy:70,spawnMin:.8,spawnMax:1.2,baseSpeed:88,speedGrowth:3.2,maxSpeed:235},
     hard:{duration:35,goal:450,accuracy:75,spawnMin:.55,spawnMax:.85,baseSpeed:105,speedGrowth:4.4,maxSpeed:285}
   };
-  const state={score:0,time:45,duration:45,difficulty:'normal',hearts:3,streak:0,bestStreak:0,total:0,correct:0,items:[],running:false,spawnClock:0,startTime:0,lastFrame:0,elapsed:0};
+  const milestoneMessages=[
+    {fraction:.25,message:'Quarter of the way there!'},
+    {fraction:.5,message:'Halfway there!'},
+    {fraction:.75,message:'Almost there!'},
+    {fraction:1,message:'Goal reached!'}
+  ];
+  const state={score:0,time:45,duration:45,difficulty:'normal',hearts:3,streak:0,bestStreak:0,total:0,correct:0,items:[],milestones:[],running:false,spawnClock:0,startTime:0,lastFrame:0,elapsed:0};
   let audio=null;
 
   function show(name){Object.entries(screens).forEach(([key,el])=>el.hidden=key!==name);resetTop.hidden=name!=='play'}
-  function tone(ok){if(!$('#sound').checked)return;try{audio||(audio=new(window.AudioContext||window.webkitAudioContext));const o=audio.createOscillator(),g=audio.createGain();o.frequency.value=ok?620:180;o.type='sine';g.gain.setValueAtTime(.05,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.12);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+.12)}catch(e){}}
+  function playSound(type){
+    if(!$('#sound').checked)return;
+    const patterns={
+      click:[{frequency:420,duration:.055}],
+      collect:[{frequency:660,duration:.11},{frequency:880,duration:.1,delay:.07}],
+      miss:[{frequency:190,duration:.18}],
+      milestone:[{frequency:620,duration:.11},{frequency:780,duration:.11,delay:.09}],
+      win:[{frequency:523,duration:.14},{frequency:659,duration:.14,delay:.12},{frequency:784,duration:.24,delay:.24}]
+    };
+    try{
+      audio||(audio=new(window.AudioContext||window.webkitAudioContext));
+      if(audio.state==='suspended')audio.resume();
+      const now=audio.currentTime;
+      patterns[type].forEach(note=>{
+        const oscillator=audio.createOscillator(),gain=audio.createGain(),start=now+(note.delay||0);
+        oscillator.type='sine';oscillator.frequency.value=note.frequency;
+        gain.gain.setValueAtTime(.001,start);gain.gain.exponentialRampToValueAtTime(.045,start+.01);gain.gain.exponentialRampToValueAtTime(.001,start+note.duration);
+        oscillator.connect(gain).connect(audio.destination);oscillator.start(start);oscillator.stop(start+note.duration);
+      });
+    }catch(e){}
+  }
   function buzz(){if($('#sound').checked&&navigator.vibrate)navigator.vibrate([35,30,35])}
   function save(){localStorage.setItem('rippleRunWallet',JSON.stringify(store))}
   function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
+  function checkMilestones(anchor){
+    const goal=difficultyRules[state.difficulty].goal;
+    let latest=null;
+    milestoneMessages.forEach(milestone=>{
+      const threshold=Math.ceil(goal*milestone.fraction);
+      if(state.score>=threshold&&!state.milestones.includes(threshold)){
+        state.milestones.push(threshold);latest=milestone;
+      }
+    });
+    if(latest){feedbackMsg(latest.message,'good',anchor);playSound('milestone')}
+  }
 
   function reset(){
     state.difficulty=document.querySelector('input[name="difficulty"]:checked').value;const rules=difficultyRules[state.difficulty];
-    state.score=0;state.duration=rules.duration;state.time=rules.duration;state.hearts=3;state.streak=0;state.bestStreak=0;state.total=0;state.correct=0;state.items=[];state.spawnClock=.2;state.elapsed=0;$('#goalLabel').textContent=rules.goal;
+    state.score=0;state.duration=rules.duration;state.time=rules.duration;state.hearts=3;state.streak=0;state.bestStreak=0;state.total=0;state.correct=0;state.items=[];state.milestones=[];state.spawnClock=.2;state.elapsed=0;$('#goalLabel').textContent=rules.goal;
     game.querySelectorAll('.item').forEach(el=>el.remove());updateHUD();show('play');state.running=true;state.lastFrame=performance.now();requestAnimationFrame(loop);
   }
   function updateHUD(){scoreEl.textContent=state.score;timerEl.textContent=Math.ceil(state.time);heartsEl.textContent=Array.from({length:3},(_,i)=>i<state.hearts?'♥':'♡').join(' ');progress.style.width=`${clamp(state.elapsed/state.duration*100,0,100)}%`}
@@ -152,14 +189,14 @@
   }
   function catchItem(item){
     if(!state.running||item.caught)return;item.caught=true;state.total++;
-    if(item.type==='polluted'){state.score-=20;state.streak=0;state.hearts=Math.max(0,state.hearts-0);feedbackMsg('Polluted: −20 points','bad',item.el);item.el.classList.add('bad-hit');tone(false);buzz();}else{
+    if(item.type==='polluted'){state.score-=20;state.streak=0;state.hearts=Math.max(0,state.hearts-0);feedbackMsg('Polluted: −20 points','bad',item.el);item.el.classList.add('bad-hit');playSound('miss');buzz();}else{
       const points={clean:10,repair:15,can:25}[item.type];state.correct++;state.streak++;state.score+=points;
       let bonus='';if(state.streak>0&&state.streak%5===0){state.score+=50;bonus=' · streak +50'}
-      state.bestStreak=Math.max(state.bestStreak,state.streak);feedbackMsg(`+${points}${bonus}`,'good',item.el);tone(true);item.el.classList.add('collected');
+      state.bestStreak=Math.max(state.bestStreak,state.streak);feedbackMsg(`+${points}${bonus}`,'good',item.el);playSound('collect');item.el.classList.add('collected');checkMilestones(item.el);
     }
     updateHUD();setTimeout(()=>{item.el.remove();const index=state.items.indexOf(item);if(index>=0)state.items.splice(index,1)},250);checkEnd();
   }
-  function missItem(item){state.total++;if(item.type!=='polluted'){state.hearts--;state.streak=0;feedbackMsg('Missed clean item · −1 heart','bad',null)}updateHUD();checkEnd()}
+  function missItem(item){state.total++;playSound('miss');if(item.type!=='polluted'){state.hearts--;state.streak=0;feedbackMsg('Missed clean item · −1 heart','bad',null)}updateHUD();checkEnd()}
   function feedbackMsg(text,type,anchor){feedback.textContent=text;feedback.className=`feedback ${type}`;feedback.hidden=false;if(anchor)feedback.style.top=`${clamp(anchor.offsetTop-10,10,game.clientHeight*.42)}px`;clearTimeout(feedback.timer);feedback.timer=setTimeout(()=>feedback.hidden=true,850)}
   function checkEnd(){if(state.hearts<=0||state.time<=0)finish()}
   function loop(now){
@@ -182,10 +219,11 @@
     $('#resultTitle').innerHTML=won?'Mission <span>Complete!</span>':'<span>Try Again</span>';
     $('#resultCopy').textContent=won?'You restored a little more hope for clean water.':'Take a breath. Catch the clean items and avoid polluted drops.';
     $('#resultScore').textContent=state.score;$('#accuracy').textContent=accuracy+'%';$('#stars').textContent=stars+'★';$('#dropPoints').textContent=earned;
-    const fact=won&&store.facts.length?store.facts[store.facts.length-1]:factBank[0];$('#waterFact').innerHTML='<strong>Clean-water fact</strong>'+fact;show('result');if(won)celebrate();
+    const fact=won&&store.facts.length?store.facts[store.facts.length-1]:factBank[0];$('#waterFact').innerHTML='<strong>Clean-water fact</strong>'+fact;show('result');if(won){playSound('win');celebrate()}
   }
   function openWallet(){show('wallet');$('#walletPoints').textContent=store.points;const list=$('#completedFacts');list.innerHTML=store.facts.length?store.facts.map(f=>`<div>✓ ${f}</div>`).join(''):'<div>Complete a winning mission to unlock a clean-water fact.</div>'}
 
+  document.querySelectorAll('button:not(.item)').forEach(button=>button.addEventListener('click',()=>playSound('click')));
   $('#startBtn').addEventListener('click',reset);$('#againBtn').addEventListener('click',reset);resetTop.addEventListener('click',reset);$('#walletBtn').addEventListener('click',openWallet);
   function home(){if(state.running){state.running=false;state.items=[];game.querySelectorAll('.item').forEach(el=>el.remove())}show('welcome')}
   $('#homeBtn').addEventListener('click',home);$('#walletHomeBtn').addEventListener('click',home);
