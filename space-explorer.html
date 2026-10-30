@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b3d91">
+  <meta name="description" content="Explore NASA's Astronomy Picture of the Day across a date range of your choice.">
+  <title>Space Explorer | NASA Astronomy Picture of the Day</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --nasa-blue: #0b3d91;
+      --nasa-red: #fc3d21;
+      --ink: #101820;
+      --muted: #59636e;
+      --paper: #f4f6f8;
+      --line: #d7dce2;
+      --white: #fff;
+      --mono: "DM Mono", monospace;
+      --sans: "Public Sans", "Helvetica Neue", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; background: var(--paper); color: var(--ink); font-family: var(--sans); line-height: 1.55; }
+    button, input { font: inherit; }
+    a { color: inherit; }
+    [hidden] { display: none !important; }
+    .masthead { min-height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 max(24px, calc((100vw - 1200px) / 2)); color: var(--white); background: var(--nasa-blue); }
+    .brand { display: inline-flex; align-items: center; gap: 12px; color: inherit; text-decoration: none; }
+    .brand-mark { display: grid; width: 40px; height: 40px; place-items: center; border: 1px solid rgba(255,255,255,.55); border-radius: 50%; font-size: 13px; font-weight: 800; letter-spacing: 0; }
+    .brand-name { font-size: 14px; font-weight: 800; letter-spacing: 0; }
+    .masthead-note { font-family: var(--mono); font-size: 11px; text-transform: uppercase; }
+    .page { width: min(1200px, calc(100% - 48px)); margin: 0 auto; }
+    .intro { padding: 44px 0 28px; border-bottom: 1px solid var(--line); }
+    .eyebrow { margin: 0 0 8px; color: var(--nasa-blue); font: 500 11px var(--mono); letter-spacing: 0; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(32px, 5vw, 54px); line-height: 1.04; letter-spacing: 0; }
+    .intro-row { display: flex; align-items: end; justify-content: space-between; gap: 24px; }
+    .intro-copy { max-width: 560px; margin: 12px 0 0; color: var(--muted); }
+    .range-form { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; padding: 16px 0 0; }
+    .search-mode { display: grid; gap: 5px; margin: 0; padding: 0; border: 0; }
+    .search-mode legend { padding: 0; color: var(--muted); font: 500 10px var(--mono); text-transform: uppercase; }
+    .search-mode-options { display: flex; height: 42px; border: 1px solid #aeb8c2; }
+    .search-mode label { position: relative; display: flex; cursor: pointer; }
+    .search-mode input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .search-mode label span { display: grid; min-width: 86px; place-items: center; padding: 0 10px; color: var(--ink); background: var(--white); font-size: 12px; font-weight: 600; }
+    .search-mode label + label span { border-left: 1px solid #aeb8c2; }
+    .search-mode input:checked + span { background: var(--nasa-blue); color: var(--white); }
+    .search-mode input:focus-visible + span { outline: 3px solid var(--nasa-red); outline-offset: -3px; }
+    .date-field { display: grid; gap: 5px; }
+    .date-field label { color: var(--muted); font: 500 10px var(--mono); text-transform: uppercase; }
+    .date-field input { width: 164px; height: 42px; padding: 0 10px; border: 1px solid #aeb8c2; border-radius: 2px; background: var(--white); color: var(--ink); }
+    input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--nasa-red); outline-offset: 3px; }
+    .submit-button { min-height: 42px; padding: 0 18px; border: 0; border-radius: 2px; background: var(--nasa-red); color: var(--white); font-weight: 700; cursor: pointer; }
+    .submit-button:hover { background: #d92e17; }
+    .range-note { flex-basis: 100%; margin: -2px 0 0; color: var(--muted); font: 11px var(--mono); }
+    .status { min-height: 48px; display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; }
+    .status[data-state="error"] { color: #a92312; }
+    .status[data-state="loading"]::before { width: 14px; height: 14px; border: 2px solid #c8d3e2; border-top-color: var(--nasa-blue); border-radius: 50%; content: ""; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .featured { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, .75fr); min-height: 420px; background: #091b34; color: var(--white); }
+    .featured-media { position: relative; min-height: 420px; overflow: hidden; background: #071426; }
+    .featured-media img, .featured-media iframe { display: block; width: 100%; height: 100%; min-height: 420px; border: 0; object-fit: cover; }
+    .featured-media img { position: absolute; inset: 0; }
+    .media-label { position: absolute; z-index: 1; top: 14px; left: 14px; padding: 5px 8px; background: var(--nasa-red); color: white; font: 500 10px var(--mono); text-transform: uppercase; }
+    .featured-info { display: flex; flex-direction: column; justify-content: center; padding: clamp(24px, 4vw, 44px); }
+    .featured-date { margin: 0 0 14px; color: #b7c9e2; font: 11px var(--mono); text-transform: uppercase; }
+    .featured-info h2 { margin: 0 0 14px; font-size: clamp(24px, 3vw, 34px); line-height: 1.16; letter-spacing: 0; }
+    .featured-copy { max-height: 190px; overflow: auto; margin: 0; color: #d8e0ea; font-size: 13px; }
+    .credit { margin: 14px 0 0; color: #b7c9e2; font-size: 11px; }
+    .media-link { display: inline-flex; align-items: center; align-self: flex-start; gap: 8px; margin-top: 24px; padding-bottom: 5px; border-bottom: 1px solid var(--nasa-red); color: var(--white); font-size: 12px; font-weight: 700; text-decoration: none; }
+    .media-link:hover { color: #ffb6a8; }
+    .gallery-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 36px 0 16px; }
+    .gallery-heading h2 { margin: 0; font-size: 20px; letter-spacing: 0; }
+    .result-count { color: var(--muted); font: 11px var(--mono); }
+    .gallery { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding-bottom: 56px; }
+    .gallery-item { min-width: 0; border: 1px solid var(--line); background: var(--white); }
+    .gallery-select { display: block; width: 100%; padding: 0; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer; }
+    .gallery-select[aria-pressed="true"] { box-shadow: inset 0 0 0 3px var(--nasa-red); }
+    .gallery-select img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #dfe4ea; }
+    .video-placeholder { display: grid; width: 100%; aspect-ratio: 4 / 3; place-items: center; background: #102b4b; color: white; font: 11px var(--mono); text-transform: uppercase; }
+    .gallery-text { display: block; padding: 12px; }
+    .gallery-date { display: block; margin-bottom: 4px; color: var(--nasa-blue); font: 10px var(--mono); }
+    .gallery-title { display: -webkit-box; overflow: hidden; min-height: 42px; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 13px; font-weight: 700; line-height: 1.5; }
+    .empty-state { padding: 30px 0 60px; color: var(--muted); }
+    .footer { padding: 18px 24px; background: #e7ebef; color: #4c5661; text-align: center; font-size: 11px; }
+    .footer a { color: var(--nasa-blue); font-weight: 700; }
+    @media (max-width: 850px) {
+      .intro-row { align-items: start; flex-direction: column; }
+      .range-form { padding-top: 2px; }
+      .featured { grid-template-columns: 1fr; }
+      .featured-media, .featured-media img, .featured-media iframe { min-height: 0; height: auto; aspect-ratio: 16 / 9; }
+      .featured-info { min-height: 260px; }
+      .gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 560px) {
+      .masthead { min-height: 56px; padding: 0 18px; }
+      .masthead-note { display: none; }
+      .page { width: min(100% - 36px, 1200px); }
+      .intro { padding-top: 32px; }
+      .range-form { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+      .date-field input { width: 100%; min-width: 0; }
+      .submit-button { grid-column: 1 / -1; }
+      .range-note { grid-column: 1 / -1; }
+      .featured { margin: 0 -18px; }
+      .featured-info { padding: 24px 18px 28px; }
+      .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+      .gallery-text { padding: 9px; }
+      .gallery-title { font-size: 12px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="index.html" aria-label="Ashley Miller portfolio home">
+      <span class="brand-mark" aria-hidden="true">NASA</span>
+      <span class="brand-name">SPACE EXPLORER</span>
+    </a>
+    <span class="masthead-note">Astronomy Picture of the Day</span>
+  </header>
+
+  <main class="page">
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">A new view of the universe, every day</p>
+      <div class="intro-row">
+        <div>
+          <h1 id="page-title">The cosmos, day by day.</h1>
+          <p class="intro-copy">Explore the images and stories behind NASA's Astronomy Picture of the Day. Choose a date range to travel through the archive.</p>
+        </div>
+        <form class="range-form" id="rangeForm">
+          <fieldset class="search-mode">
+            <legend>Search by</legend>
+            <div class="search-mode-options">
+              <label><input type="radio" name="searchMode" value="single"><span>One day</span></label>
+              <label><input type="radio" name="searchMode" value="range" checked><span>Date range</span></label>
+            </div>
+          </fieldset>
+          <div class="date-field"><label id="startLabel" for="startDate">From</label><input id="startDate" name="start" type="date" required></div>
+          <div class="date-field" id="endField"><label for="endDate">Through</label><input id="endDate" name="end" type="date" required></div>
+          <button class="submit-button" type="submit">Explore dates</button>
+          <p class="range-note">Choose up to 30 days · Archive begins June 16, 1995</p>
+        </form>
+      </div>
+    </section>
+
+    <p class="status" id="status" role="status" aria-live="polite" data-state="loading">Connecting to NASA's image archive…</p>
+
+    <section id="results" hidden aria-label="Astronomy pictures">
+      <article class="featured" id="featured"></article>
+      <div class="gallery-heading">
+        <h2>Explore the collection</h2>
+        <span class="result-count" id="resultCount"></span>
+      </div>
+      <div class="gallery" id="gallery"></div>
+    </section>
+    <p class="empty-state" id="emptyState" hidden>No pictures were found for these dates. Try another range.</p>
+  </main>
+
+  <footer class="footer">Imagery and astronomy explanations courtesy of <a href="https://science.nasa.gov/apod/" target="_blank" rel="noopener">NASA's Astronomy Picture of the Day</a>.</footer>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const archiveStart = '1995-06-16';
+      const maxDays = 30;
+      const form = document.querySelector('#rangeForm');
+      const startInput = document.querySelector('#startDate');
+      const endInput = document.querySelector('#endDate');
+      const endField = document.querySelector('#endField');
+      const startLabel = document.querySelector('#startLabel');
+      const status = document.querySelector('#status');
+      const results = document.querySelector('#results');
+      const featured = document.querySelector('#featured');
+      const gallery = document.querySelector('#gallery');
+      const emptyState = document.querySelector('#emptyState');
+      const resultCount = document.querySelector('#resultCount');
+      let pictures = [];
+
+      function syncSearchMode() {
+        const singleDay = document.querySelector('input[name="searchMode"]:checked').value === 'single';
+        endField.hidden = singleDay;
+        endInput.disabled = singleDay;
+        endInput.required = !singleDay;
+        startLabel.textContent = singleDay ? 'Date' : 'From';
+        if (singleDay) endInput.value = startInput.value;
+      }
+
+      const dateString = date => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+
+      function setStatus(message, state) {
+        status.textContent = message;
+        status.dataset.state = state;
+        status.hidden = !message;
+      }
+
+      function node(tag, className, text) {
+        const element = document.createElement(tag);
+        if (className) element.className = className;
+        if (text) element.textContent = text;
+        return element;
+      }
+
+      function formatDate(value) {
+        return new Intl.DateTimeFormat('en', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`));
+      }
+
+      function selectPicture(picture) {
+        featured.replaceChildren();
+        const media = node('div', 'featured-media');
+        const label = node('span', 'media-label', picture.media_type === 'video' ? 'Video' : 'Picture of the day');
+        media.append(label);
+
+        if (picture.media_type === 'video') {
+          const frame = document.createElement('iframe');
+          frame.src = picture.url;
+          frame.title = picture.title;
+          frame.loading = 'lazy';
+          frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+          frame.allowFullscreen = true;
+          media.append(frame);
+        } else {
+          const image = document.createElement('img');
+          image.src = picture.hdurl || picture.url;
+          image.alt = picture.title;
+          image.loading = 'eager';
+          media.append(image);
+        }
+
+        const info = node('div', 'featured-info');
+        info.append(node('p', 'featured-date', formatDate(picture.date)));
+        info.append(node('h2', '', picture.title));
+        info.append(node('p', 'featured-copy', picture.explanation));
+        if (picture.copyright) info.append(node('p', 'credit', `Image credit: ${picture.copyright}`));
+        const link = node('a', 'media-link', picture.media_type === 'video' ? 'Open original media' : 'View image at full resolution');
+        link.href = picture.hdurl || picture.url;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        info.append(link);
+        featured.append(media, info);
+
+        gallery.querySelectorAll('.gallery-select').forEach(button => {
+          button.setAttribute('aria-pressed', String(button.dataset.date === picture.date));
+        });
+      }
+
+      function renderGallery(items) {
+        gallery.replaceChildren();
+        items.forEach((picture, index) => {
+          const article = node('article', 'gallery-item');
+          const button = node('button', 'gallery-select');
+          button.type = 'button';
+          button.dataset.date = picture.date;
+          button.setAttribute('aria-pressed', 'false');
+          button.setAttribute('aria-label', `View ${picture.title}, ${formatDate(picture.date)}`);
+
+          if (picture.media_type === 'image' && picture.thumbnail) {
+            const image = document.createElement('img');
+            image.src = picture.thumbnail;
+            image.alt = '';
+            image.loading = index < 8 ? 'eager' : 'lazy';
+            button.append(image);
+          } else {
+            button.append(node('span', 'video-placeholder', 'Video · select to play'));
+          }
+
+          const text = node('span', 'gallery-text');
+          text.append(node('span', 'gallery-date', formatDate(picture.date)));
+          text.append(node('span', 'gallery-title', picture.title));
+          button.append(text);
+          button.addEventListener('click', () => selectPicture(picture));
+          article.append(button);
+          gallery.append(article);
+        });
+      }
+
+      async function loadRange(start, end) {
+        setStatus('Loading images from NASA…', 'loading');
+        results.hidden = true;
+        emptyState.hidden = true;
+        const nextDay = new Date(`${end}T00:00:00Z`);
+        nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+        const startBoundary = new Date(`${start}T00:00:00Z`);
+        startBoundary.setUTCSeconds(startBoundary.getUTCSeconds() - 1);
+        const params = new URLSearchParams({
+          'science-org': '22768',
+          after: startBoundary.toISOString().slice(0, 19),
+          before: nextDay.toISOString().slice(0, 19),
+          per_page: '100',
+          _embed: '1'
+        });
+
+        try {
+          const response = await fetch(`https://science.nasa.gov/wp-json/wp/v2/image-article?${params}`);
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.message || 'NASA’s image archive could not complete this request.');
+          pictures = data.map(post => {
+            const media = post._embedded?.['wp:featuredmedia']?.[0];
+            const sizes = media?.media_details?.sizes || {};
+            const imageUrl = sizes.full?.source_url || sizes.large?.source_url || media?.source_url || '';
+            const thumbnail = sizes.medium_large?.source_url || sizes.medium?.source_url || imageUrl;
+            const document = new DOMParser().parseFromString(post.content?.rendered || '', 'text/html');
+            document.querySelectorAll('nav, script, style, footer, .hds-secondary-navigation-wrapper').forEach(element => element.remove());
+            const articleText = document.body.textContent.replace(/\s+/g, ' ').trim();
+            const explanation = articleText.match(/Explanation:\s*([\s\S]*?)(?:\s+(?:Image credit|Tomorrow's picture)|$)/i)?.[1];
+            const rawTitle = document.createElement('div');
+            rawTitle.innerHTML = post.title?.rendered || '';
+            const title = rawTitle.textContent
+              .replace(/^APOD:\s*/i, '')
+              .replace(/^(?:(?:\d{1,2}\s+[A-Za-z]+\s+\d{4})|(?:\d{4}\s+[A-Za-z]+\s+\d{1,2}))\s+[–-]\s*/, '');
+            return {
+              date: post.date.slice(0, 10),
+              title: title || 'Astronomy Picture of the Day',
+              explanation: explanation || `Explore NASA's Astronomy Picture of the Day for ${post.date.slice(0, 10)}.`,
+              url: imageUrl,
+              thumbnail,
+              media_type: imageUrl ? 'image' : 'video',
+              copyright: '',
+              pageUrl: post.link
+            };
+          }).filter(picture => picture.url && !/nasa-logo/i.test(picture.url))
+            .sort((a, b) => b.date.localeCompare(a.date));
+          if (!pictures.length) {
+            setStatus('NASA returned no astronomy pictures for those dates. Try another range.', 'error');
+            return;
+          }
+          renderGallery(pictures);
+          selectPicture(pictures[0]);
+          resultCount.textContent = `${pictures.length} ${pictures.length === 1 ? 'day' : 'days'} · ${formatDate(start)} — ${formatDate(end)}`;
+          results.hidden = false;
+          setStatus('', '');
+        } catch (error) {
+          setStatus(error.message || 'Unable to reach NASA right now. Please try again.', 'error');
+        }
+      }
+
+      form.addEventListener('submit', event => {
+        event.preventDefault();
+        const start = startInput.value;
+        const singleDay = document.querySelector('input[name="searchMode"]:checked').value === 'single';
+        const end = singleDay ? start : endInput.value;
+        if (!start || !end) return;
+        if (start < archiveStart || end < archiveStart) {
+          setStatus('Choose dates on or after June 16, 1995.', 'error');
+          return;
+        }
+        if (start > end) {
+          setStatus('The start date must be on or before the end date.', 'error');
+          return;
+        }
+        const days = (Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`)) / 86400000 + 1;
+        if (days > maxDays) {
+          setStatus('Choose a range of 30 days or fewer.', 'error');
+          return;
+        }
+        loadRange(start, end);
+      });
+
+      document.querySelectorAll('input[name="searchMode"]').forEach(input => {
+        input.addEventListener('change', syncSearchMode);
+      });
+
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const weekStart = new Date(yesterday);
+      weekStart.setDate(weekStart.getDate() - 6);
+      const todayString = dateString(today);
+      endInput.max = todayString;
+      startInput.max = todayString;
+      startInput.min = archiveStart;
+      endInput.min = archiveStart;
+      endInput.value = dateString(yesterday);
+      startInput.value = dateString(weekStart);
+      syncSearchMode();
+      loadRange(startInput.value, endInput.value);
+    })();
+  </script>
+</body>
+</html>
