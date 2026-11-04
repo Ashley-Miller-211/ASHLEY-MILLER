@@ -144,7 +144,7 @@
           <h1 id="page-title">The cosmos, day by day.</h1>
           <p class="intro-copy">Explore the images and stories behind NASA's Astronomy Picture of the Day. Choose a date range to travel through the archive.</p>
         </div>
-          <p class="range-note">Choose up to 9 days · Archive begins June 16, 1995</p>
+        <form class="range-form" id="rangeForm">
           <fieldset class="search-mode">
             <legend>Search by</legend>
             <div class="search-mode-options">
@@ -155,7 +155,7 @@
           <div class="date-field"><label id="startLabel" for="startDate">From</label><input id="startDate" name="start" type="date" required></div>
           <div class="date-field" id="endField"><label for="endDate">Through</label><input id="endDate" name="end" type="date" required></div>
           <button class="submit-button" type="submit">Explore dates</button>
-          <p class="range-note">Choose up to 30 days · Archive begins June 16, 1995</p>
+          <p class="range-note">Choose up to 9 days · Archive begins June 16, 1995</p>
         </form>
       </div>
     </section>
@@ -384,7 +384,7 @@
           let apodPictures = [];
           let apodError;
           try {
-            const apodResponse = await fetch(`https://api.nasa.gov/planetary/apod?${apodParams}`);
+            const apodResponse = await fetch(`https://api.nasa.gov/planetary/apod?${apodParams}`, { signal: AbortSignal.timeout(8000) });
             const apodData = await apodResponse.json();
             if (!apodResponse.ok) throw new Error(apodData.msg || apodData.message || 'NASA APOD could not complete this request.');
             apodPictures = (Array.isArray(apodData) ? apodData : [apodData]).map(picture => ({
