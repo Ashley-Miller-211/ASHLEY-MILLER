@@ -5,7 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b3d91">
   <meta name="description" content="Explore NASA's Astronomy Picture of the Day across a date range of your choice.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Space Explorer | NASA Astronomy Picture of the Day</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icons/space-explorer.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icons/space-explorer.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -33,6 +38,10 @@
     .brand-mark { display: grid; width: 40px; height: 40px; place-items: center; border: 1px solid rgba(255,255,255,.55); border-radius: 50%; font-size: 13px; font-weight: 800; letter-spacing: 0; }
     .brand-name { font-size: 14px; font-weight: 800; letter-spacing: 0; }
     .masthead-note { font-family: var(--mono); font-size: 11px; text-transform: uppercase; }
+    .masthead-actions { display: flex; align-items: center; gap: 8px; }
+    .masthead-action { min-height: 36px; padding: 0 11px; border: 1px solid rgba(255,255,255,.55); border-radius: 2px; background: transparent; color: var(--white); font-size: 12px; font-weight: 700; cursor: pointer; }
+    .masthead-action:hover { background: rgba(255,255,255,.12); }
+    .offline-banner { position: fixed; z-index: 20; right: 16px; bottom: 16px; left: 16px; width: max-content; max-width: min(560px, calc(100% - 32px)); margin: auto; padding: 12px 16px; border: 1px solid #a92312; background: #fff3ef; color: #7e1d10; box-shadow: 0 8px 24px rgba(16,24,32,.16); font-size: 13px; }
     .page { width: min(1200px, calc(100% - 48px)); margin: 0 auto; }
     .intro { padding: 44px 0 28px; border-bottom: 1px solid var(--line); }
     .eyebrow { margin: 0 0 8px; color: var(--nasa-blue); font: 500 11px var(--mono); letter-spacing: 0; text-transform: uppercase; }
@@ -90,6 +99,11 @@
     .space-fact p { margin: 0; color: var(--muted); font-size: 13px; }
     .picture-dialog { position: relative; width: min(1100px, calc(100% - 32px)); max-width: 1100px; max-height: min(90vh, 900px); padding: 0; overflow: auto; border: 0; background: #091b34; color: var(--white); }
     .picture-dialog::backdrop { background: rgba(4, 12, 24, .84); }
+    .install-dialog { position: relative; width: min(440px, calc(100% - 32px)); padding: 30px; border: 0; background: var(--white); color: var(--ink); box-shadow: 0 18px 56px rgba(4,12,24,.32); }
+    .install-dialog::backdrop { background: rgba(4, 12, 24, .68); }
+    .install-dialog h2 { margin: 0 40px 10px 0; font-size: 24px; }
+    .install-dialog p { margin: 0 0 20px; color: var(--muted); font-size: 14px; }
+    .install-dialog .submit-button { width: 100%; }
     .dialog-close { position: absolute; z-index: 1; top: 12px; right: 12px; width: 40px; height: 40px; border: 1px solid rgba(255,255,255,.55); border-radius: 50%; background: rgba(9,27,52,.84); color: var(--white); font-size: 24px; cursor: pointer; }
     .dialog-layout { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(280px, .7fr); min-height: 420px; }
     .dialog-media { display: grid; min-height: 420px; place-items: center; background: #050d19; }
@@ -112,6 +126,12 @@
     @media (max-width: 560px) {
       .masthead { min-height: 56px; padding: 0 18px; }
       .masthead-note { display: none; }
+      .masthead { gap: 8px; padding-right: 10px; padding-left: 10px; }
+      .brand { gap: 7px; }
+      .brand-mark { width: 34px; height: 34px; font-size: 11px; }
+      .brand-name { font-size: 11px; }
+      .masthead-actions { gap: 5px; }
+      .masthead-action { min-height: 34px; padding: 0 7px; font-size: 10px; }
       .page { width: min(100% - 36px, 1200px); }
       .intro { padding-top: 32px; }
       .range-form { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
@@ -139,9 +159,14 @@
       <span class="brand-name">SPACE EXPLORER</span>
     </a>
     <span class="masthead-note">Astronomy Picture of the Day</span>
+    <div class="masthead-actions">
+      <button class="masthead-action" id="installButton" type="button">Install app</button>
+      <button class="masthead-action" id="notificationButton" type="button">Enable notifications</button>
+    </div>
   </header>
 
   <main class="page">
+    <p class="offline-banner" id="offlineBanner" role="status" aria-live="polite" hidden>You're offline. NASA images will load from this device's cache when available.</p>
     <section class="intro" aria-labelledby="page-title">
       <p class="eyebrow">A new view of the universe, every day</p>
       <div class="intro-row">
@@ -193,6 +218,12 @@
         </div>
       </div>
     </dialog>
+
+    <dialog class="install-dialog" id="installDialog" aria-labelledby="installTitle">
+      <h2 id="installTitle">Install Space Explorer</h2>
+      <p id="installInstructions">Use your browser's install option to add Space Explorer to this device.</p>
+      <button class="submit-button" id="closeInstallDialog" type="button">Got it</button>
+    </dialog>
   </main>
 
   <footer class="footer">APOD data and imagery courtesy of <a href="https://science.nasa.gov/apod/" target="_blank" rel="noopener">NASA's Astronomy Picture of the Day</a>.</footer>
@@ -225,8 +256,14 @@
       const resultCount = document.querySelector('#resultCount');
       const pictureDialog = document.querySelector('#pictureDialog');
       const dialogMedia = document.querySelector('#dialogMedia');
+      const offlineBanner = document.querySelector('#offlineBanner');
+      const installButton = document.querySelector('#installButton');
+      const installDialog = document.querySelector('#installDialog');
+      const notificationButton = document.querySelector('#notificationButton');
       document.querySelector('#spaceFact').textContent = spaceFacts[Math.floor(Math.random() * spaceFacts.length)];
       let pictures = [];
+      let serviceWorkerRegistration = null;
+      let deferredInstallPrompt = null;
 
       function syncSearchMode() {
         const singleDay = document.querySelector('input[name="searchMode"]:checked').value === 'single';
@@ -249,6 +286,85 @@
         status.dataset.state = state;
         status.hidden = !message;
       }
+
+      function setOfflineState(offline) {
+        offlineBanner.hidden = !offline;
+      }
+
+      setOfflineState(!navigator.onLine);
+      window.addEventListener('offline', () => setOfflineState(true));
+      window.addEventListener('online', () => setOfflineState(false));
+
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('message', event => {
+          if (event.data?.type === 'offline-fallback') setOfflineState(true);
+          if (event.data?.type === 'network-restored') setOfflineState(false);
+        });
+        navigator.serviceWorker.register('./service-worker.js')
+          .then(registration => { serviceWorkerRegistration = registration; })
+          .catch(() => setStatus('Offline support could not be started in this browser.', 'error'));
+      }
+
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+      if (isStandalone) installButton.hidden = true;
+
+      window.addEventListener('beforeinstallprompt', event => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+      });
+
+      window.addEventListener('appinstalled', () => {
+        deferredInstallPrompt = null;
+        installButton.hidden = true;
+      });
+
+      installButton.addEventListener('click', async () => {
+        if (!deferredInstallPrompt) {
+          const instructions = /iphone|ipad|ipod/i.test(navigator.userAgent)
+            ? 'Tap Share in your browser, then choose Add to Home Screen.'
+            : 'Open your browser menu and choose Install app or Add to Home Screen.';
+          document.querySelector('#installInstructions').textContent = instructions;
+          installDialog.showModal();
+          return;
+        }
+        const promptEvent = deferredInstallPrompt;
+        deferredInstallPrompt = null;
+        await promptEvent.prompt();
+        const choice = await promptEvent.userChoice;
+        if (choice.outcome === 'accepted') installButton.hidden = true;
+      });
+
+      document.querySelector('#closeInstallDialog').addEventListener('click', () => installDialog.close());
+
+      notificationButton.addEventListener('click', async () => {
+        if (!('Notification' in window)) {
+          setStatus('Notifications are not supported by this browser.', 'error');
+          return;
+        }
+        try {
+          const permission = Notification.permission === 'default'
+            ? await Notification.requestPermission()
+            : Notification.permission;
+          if (permission !== 'granted') {
+            setStatus('Notifications are blocked. You can change this in your browser settings.', 'error');
+            return;
+          }
+          const registration = serviceWorkerRegistration || (('serviceWorker' in navigator) ? await navigator.serviceWorker.ready : null);
+          if (registration) {
+            await registration.showNotification('Space Explorer', {
+              body: 'Notifications are enabled on this device.',
+              icon: './icons/space-explorer.svg',
+              tag: 'space-explorer-enabled'
+            });
+          } else {
+            new Notification('Space Explorer', { body: 'Notifications are enabled on this device.', icon: './icons/space-explorer.svg' });
+          }
+          notificationButton.textContent = 'Notifications on';
+          setStatus('Notifications are enabled on this device.', '');
+        } catch {
+          setStatus('The notification request could not be completed.', 'error');
+        }
+      });
 
       function node(tag, className, text) {
         const element = document.createElement(tag);
@@ -465,6 +581,7 @@
           setStatus(pictures.length < requestedDates.length ? `NASA returned ${pictures.length} of ${requestedDates.length} requested days.` : '', pictures.length < requestedDates.length ? 'error' : '');
         } catch (error) {
           const errors = error.errors || [];
+          setOfflineState(!navigator.onLine);
           setStatus(errors.find(sourceError => sourceError.message !== 'NASA APOD returned incomplete image data.')?.message || errors[0]?.message || error.message || 'NASA could not load images for those dates. Please try again.', 'error');
         }
       }

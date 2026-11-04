@@ -1,0 +1,20 @@
+{
+  "id": "./space-explorer.html",
+  "name": "NASA Space Explorer",
+  "short_name": "Space Explorer",
+  "description": "Explore NASA's Astronomy Picture of the Day by date.",
+  "start_url": "./space-explorer.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4f6f8",
+  "theme_color": "#0b3d91",
+  "icons": [
+    {
+      "src": "./icons/space-explorer.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
