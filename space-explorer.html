@@ -62,7 +62,7 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .featured { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, .75fr); min-height: 420px; background: #091b34; color: var(--white); }
     .featured-media { position: relative; min-height: 420px; overflow: hidden; background: #071426; }
-    .featured-media img, .featured-media iframe { display: block; width: 100%; height: 100%; min-height: 420px; border: 0; object-fit: cover; }
+    .featured-media img, .featured-media iframe, .featured-media video { display: block; width: 100%; height: 100%; min-height: 420px; border: 0; object-fit: cover; }
     .featured-media img { position: absolute; inset: 0; }
     .media-label { position: absolute; z-index: 1; top: 14px; left: 14px; padding: 5px 8px; background: var(--nasa-red); color: white; font: 500 10px var(--mono); text-transform: uppercase; }
     .featured-info { display: flex; flex-direction: column; justify-content: center; padding: clamp(24px, 4vw, 44px); }
@@ -89,7 +89,7 @@
     .dialog-close { position: absolute; z-index: 1; top: 12px; right: 12px; width: 40px; height: 40px; border: 1px solid rgba(255,255,255,.55); border-radius: 50%; background: rgba(9,27,52,.84); color: var(--white); font-size: 24px; cursor: pointer; }
     .dialog-layout { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(280px, .7fr); min-height: 420px; }
     .dialog-media { display: grid; min-height: 420px; place-items: center; background: #050d19; }
-    .dialog-media img, .dialog-media iframe { display: block; width: 100%; height: 100%; min-height: 420px; border: 0; object-fit: contain; }
+    .dialog-media img, .dialog-media iframe, .dialog-media video { display: block; width: 100%; height: 100%; min-height: 420px; border: 0; object-fit: contain; }
     .dialog-info { align-self: center; padding: 34px 28px; }
     .dialog-info h2 { margin: 0 0 14px; font-size: clamp(24px, 3vw, 34px); line-height: 1.15; }
     .dialog-date { margin: 0 0 12px; color: #b7c9e2; font: 11px var(--mono); text-transform: uppercase; }
@@ -101,7 +101,7 @@
       .intro-row { align-items: start; flex-direction: column; }
       .range-form { padding-top: 2px; }
       .featured { grid-template-columns: 1fr; }
-      .featured-media, .featured-media img, .featured-media iframe { min-height: 0; height: auto; aspect-ratio: 16 / 9; }
+      .featured-media, .featured-media img, .featured-media iframe, .featured-media video { min-height: 0; height: auto; aspect-ratio: 16 / 9; }
       .featured-info { min-height: 260px; }
       .gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
@@ -121,7 +121,7 @@
       .gallery-title { font-size: 12px; }
       .picture-dialog { width: calc(100% - 20px); max-height: calc(100vh - 20px); }
       .dialog-layout { grid-template-columns: 1fr; }
-      .dialog-media, .dialog-media img, .dialog-media iframe { min-height: 0; height: auto; aspect-ratio: 4 / 3; }
+      .dialog-media, .dialog-media img, .dialog-media iframe, .dialog-media video { min-height: 0; height: auto; aspect-ratio: 4 / 3; }
       .dialog-info { padding: 24px 18px; }
     }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
@@ -242,6 +242,28 @@
         return new Intl.DateTimeFormat('en', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`));
       }
 
+      function createVideoPlayer(picture) {
+        if (/\.(?:mp4|webm)(?:[?#]|$)/i.test(picture.url)) {
+          const video = document.createElement('video');
+          video.controls = true;
+          video.preload = 'metadata';
+          video.poster = picture.thumbnail || '';
+          video.setAttribute('aria-label', picture.title);
+          const source = document.createElement('source');
+          source.src = picture.url;
+          source.type = /\.webm(?:[?#]|$)/i.test(picture.url) ? 'video/webm' : 'video/mp4';
+          video.append(source);
+          return video;
+        }
+        const frame = document.createElement('iframe');
+        frame.src = picture.url;
+        frame.title = picture.title;
+        frame.loading = 'lazy';
+        frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+        frame.allowFullscreen = true;
+        return frame;
+      }
+
       function selectPicture(picture) {
         featured.replaceChildren();
         const media = node('div', 'featured-media');
@@ -249,13 +271,7 @@
         media.append(label);
 
         if (picture.media_type === 'video') {
-          const frame = document.createElement('iframe');
-          frame.src = picture.url;
-          frame.title = picture.title;
-          frame.loading = 'lazy';
-          frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-          frame.allowFullscreen = true;
-          media.append(frame);
+          media.append(createVideoPlayer(picture));
         } else {
           const image = document.createElement('img');
           image.src = picture.hdurl || picture.url;
@@ -284,12 +300,7 @@
       function openPictureDialog(picture) {
         dialogMedia.replaceChildren();
         if (picture.media_type === 'video') {
-          const frame = document.createElement('iframe');
-          frame.src = picture.url;
-          frame.title = picture.title;
-          frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-          frame.allowFullscreen = true;
-          dialogMedia.append(frame);
+          dialogMedia.append(createVideoPlayer(picture));
         } else {
           const image = document.createElement('img');
           image.src = picture.hdurl || picture.url;
@@ -409,6 +420,8 @@
                   contentDocument.querySelectorAll('nav, script, style, footer, .hds-secondary-navigation-wrapper').forEach(element => element.remove());
                   const articleText = contentDocument.body.textContent.replace(/\s+/g, ' ').trim();
                   const explanation = articleText.match(/Explanation:\s*([\s\S]*?)(?:\s+(?:Image credit|Tomorrow's picture)|$)/i)?.[1];
+                  const videoElement = contentDocument.querySelector('video');
+                  const videoUrl = videoElement?.querySelector('source[src]')?.src || videoElement?.src || '';
                   const rawTitle = document.createElement('div');
                   rawTitle.innerHTML = post.title?.rendered || '';
                   const title = rawTitle.textContent
@@ -419,10 +432,10 @@
                       date: post.date.slice(0, 10),
                       title: title || 'Astronomy Picture of the Day',
                       explanation: explanation || `Explore NASA's Astronomy Picture of the Day for ${post.date.slice(0, 10)}.`,
-                      url: imageUrl,
-                      hdurl: imageUrl,
-                      thumbnail: sizes.medium_large?.source_url || sizes.medium?.source_url || imageUrl,
-                      media_type: 'image',
+                      url: videoUrl || imageUrl,
+                      hdurl: videoUrl || imageUrl,
+                      thumbnail: videoElement?.poster || sizes.medium_large?.source_url || sizes.medium?.source_url || imageUrl,
+                      media_type: videoUrl ? 'video' : 'image',
                       copyright: ''
                     });
                   }
