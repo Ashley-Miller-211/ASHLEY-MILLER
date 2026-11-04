@@ -399,84 +399,73 @@
           _embed: '1'
         });
 
+        const apodRequest = (async () => {
+          const response = await fetch(`https://api.nasa.gov/planetary/apod?${apodParams}`, { signal: AbortSignal.timeout(8000) });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.msg || data.message || 'NASA APOD could not complete this request.');
+          const apodPictures = (Array.isArray(data) ? data : [data]).map(picture => ({
+            date: picture.date,
+            title: picture.title,
+            explanation: picture.explanation,
+            url: picture.url,
+            hdurl: picture.hdurl || picture.url,
+            thumbnail: picture.thumbnail_url || picture.url,
+            media_type: picture.media_type,
+            copyright: picture.copyright || ''
+          })).filter(picture => picture.date && picture.title && picture.url && !/nasa-logo/i.test(picture.url) && !/^NASA Science$/i.test(picture.title));
+          if (!requestedDates.every(date => apodPictures.some(picture => picture.date === date))) {
+            throw new Error('NASA APOD returned incomplete image data.');
+          }
+          return apodPictures;
+        })();
+
+        const archiveRequest = (async () => {
+          const response = await fetch(`https://science.nasa.gov/wp-json/wp/v2/image-article?${archiveParams}`);
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.message || 'NASA’s APOD archive is unavailable.');
+          if (!Array.isArray(data)) throw new Error('NASA’s APOD archive returned an invalid response.');
+          const archivePictures = data.map(post => {
+            const media = post._embedded?.['wp:featuredmedia']?.[0];
+            const sizes = media?.media_details?.sizes || {};
+            const imageUrl = media?.source_url || sizes.full?.source_url || sizes.large?.source_url || '';
+            if (!imageUrl || /nasa-logo/i.test(imageUrl)) return null;
+            const contentDocument = new DOMParser().parseFromString(post.content?.rendered || '', 'text/html');
+            contentDocument.querySelectorAll('nav, script, style, footer, .hds-secondary-navigation-wrapper').forEach(element => element.remove());
+            const articleText = contentDocument.body.textContent.replace(/\s+/g, ' ').trim();
+            const explanation = articleText.match(/Explanation:\s*([\s\S]*?)(?:\s+(?:Image credit|Tomorrow's picture)|$)/i)?.[1];
+            const videoElement = contentDocument.querySelector('video');
+            const videoUrl = videoElement?.querySelector('source[src]')?.src || videoElement?.src || '';
+            const rawTitle = document.createElement('div');
+            rawTitle.innerHTML = post.title?.rendered || '';
+            const title = rawTitle.textContent
+              .replace(/^APOD:\s*/i, '')
+              .replace(/^(?:(?:\d{1,2}\s+[A-Za-z]+\s+\d{4})|(?:\d{4}\s+[A-Za-z]+\s+\d{1,2}))\s+[–-]\s*/, '');
+            return {
+              date: post.date.slice(0, 10),
+              title: title || 'Astronomy Picture of the Day',
+              explanation: explanation || `Explore NASA's Astronomy Picture of the Day for ${post.date.slice(0, 10)}.`,
+              url: videoUrl || imageUrl,
+              hdurl: videoUrl || imageUrl,
+              thumbnail: videoElement?.poster || sizes.medium_large?.source_url || sizes.medium?.source_url || imageUrl,
+              media_type: videoUrl ? 'video' : 'image',
+              copyright: ''
+            };
+          }).filter(Boolean);
+          if (!archivePictures.length) throw new Error('NASA returned no photos for those dates. Try another range.');
+          return archivePictures;
+        })();
+
         try {
-          let apodPictures = [];
-          let apodError;
-          try {
-            const apodResponse = await fetch(`https://api.nasa.gov/planetary/apod?${apodParams}`, { signal: AbortSignal.timeout(8000) });
-            const apodData = await apodResponse.json();
-            if (!apodResponse.ok) throw new Error(apodData.msg || apodData.message || 'NASA APOD could not complete this request.');
-            apodPictures = (Array.isArray(apodData) ? apodData : [apodData]).map(picture => ({
-              date: picture.date,
-              title: picture.title,
-              explanation: picture.explanation,
-              url: picture.url,
-              hdurl: picture.hdurl || picture.url,
-              thumbnail: picture.thumbnail_url || picture.url,
-              media_type: picture.media_type,
-              copyright: picture.copyright || ''
-            }));
-          } catch (error) {
-            apodError = error;
-          }
-          const pictureByDate = new Map(apodPictures
-            .filter(picture => picture.date && picture.title && picture.url && !/nasa-logo/i.test(picture.url) && !/^NASA Science$/i.test(picture.title))
-            .map(picture => [picture.date, picture]));
-
-          let archiveError;
-          if (requestedDates.some(date => !pictureByDate.has(date))) {
-            try {
-              const archiveResponse = await fetch(`https://science.nasa.gov/wp-json/wp/v2/image-article?${archiveParams}`);
-              const archiveData = await archiveResponse.json();
-              if (!archiveResponse.ok) throw new Error(archiveData.message || 'NASA’s APOD archive is unavailable.');
-              if (Array.isArray(archiveData)) {
-                archiveData.forEach(post => {
-                  const media = post._embedded?.['wp:featuredmedia']?.[0];
-                  const sizes = media?.media_details?.sizes || {};
-                  const imageUrl = media?.source_url || sizes.full?.source_url || sizes.large?.source_url || '';
-                  if (!imageUrl || /nasa-logo/i.test(imageUrl)) return;
-                  const contentDocument = new DOMParser().parseFromString(post.content?.rendered || '', 'text/html');
-                  contentDocument.querySelectorAll('nav, script, style, footer, .hds-secondary-navigation-wrapper').forEach(element => element.remove());
-                  const articleText = contentDocument.body.textContent.replace(/\s+/g, ' ').trim();
-                  const explanation = articleText.match(/Explanation:\s*([\s\S]*?)(?:\s+(?:Image credit|Tomorrow's picture)|$)/i)?.[1];
-                  const videoElement = contentDocument.querySelector('video');
-                  const videoUrl = videoElement?.querySelector('source[src]')?.src || videoElement?.src || '';
-                  const rawTitle = document.createElement('div');
-                  rawTitle.innerHTML = post.title?.rendered || '';
-                  const title = rawTitle.textContent
-                    .replace(/^APOD:\s*/i, '')
-                    .replace(/^(?:(?:\d{1,2}\s+[A-Za-z]+\s+\d{4})|(?:\d{4}\s+[A-Za-z]+\s+\d{1,2}))\s+[–-]\s*/, '');
-                  if (!pictureByDate.has(post.date.slice(0, 10))) {
-                    pictureByDate.set(post.date.slice(0, 10), {
-                      date: post.date.slice(0, 10),
-                      title: title || 'Astronomy Picture of the Day',
-                      explanation: explanation || `Explore NASA's Astronomy Picture of the Day for ${post.date.slice(0, 10)}.`,
-                      url: videoUrl || imageUrl,
-                      hdurl: videoUrl || imageUrl,
-                      thumbnail: videoElement?.poster || sizes.medium_large?.source_url || sizes.medium?.source_url || imageUrl,
-                      media_type: videoUrl ? 'video' : 'image',
-                      copyright: ''
-                    });
-                  }
-                });
-              }
-            } catch (error) {
-              archiveError = error;
-            }
-          }
-
-          pictures = [...pictureByDate.values()].sort((a, b) => b.date.localeCompare(a.date));
-          if (!pictures.length) {
-            setStatus(archiveError?.message || apodError?.message || 'NASA returned no astronomy pictures for those dates. Try another range.', 'error');
-            return;
-          }
+          pictures = await Promise.any([apodRequest, archiveRequest]);
+          pictures.sort((a, b) => b.date.localeCompare(a.date));
           renderGallery(pictures);
           selectPicture(pictures[0]);
           resultCount.textContent = `${pictures.length} ${pictures.length === 1 ? 'day' : 'days'} · ${formatDate(start)} — ${formatDate(end)}`;
           results.hidden = false;
           setStatus(pictures.length < requestedDates.length ? `NASA returned ${pictures.length} of ${requestedDates.length} requested days.` : '', pictures.length < requestedDates.length ? 'error' : '');
         } catch (error) {
-          setStatus(error.message || 'Unable to reach NASA right now. Please try again.', 'error');
+          const errors = error.errors || [];
+          setStatus(errors.find(sourceError => sourceError.message !== 'NASA APOD returned incomplete image data.')?.message || errors[0]?.message || error.message || 'NASA could not load images for those dates. Please try again.', 'error');
         }
       }
 
